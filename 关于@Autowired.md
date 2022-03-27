@@ -1,0 +1,25 @@
+## 关于@Autowired
+
+面试官：Spring框架中的@Autowired注解可以标注在哪些地方？
+
+小小白：@Autowired注解可以被标注在构造函数、属性、setter方法或配置方法上，用于实现依赖自动注入。
+
+面试官：有没有研究过@Autowired注解的实现原理？
+
+小小白：看过它的实现源码。
+
+面试官：那你说一下@Autowired注解的工作原理？
+
+小小白：@Autowired注解的作用是由AutowiredAnnotationBeanPostProcessor实现的，查看该类的源码会发现它实现了MergedBeanDefinitionPostProcessor接口，进而实现了接口中的postProcessMergedBeanDefinition方法，@Autowired注解正是通过这个方法实现注入类型的预解析，将需要依赖注入的属性信息封装到InjectionMetadata类中，InjectionMetadata类中包含了哪些需要注入的元素及元素要注入到哪个目标类中，在Spring容器启动的过程中初始化单例bean的时候通过populateBean方法实现对属性的注入。
+
+面试官：AutowiredAnnotationBeanPostProcessor类的postProcessMergedBeanDefinition方法是在什么时候被调用的？
+
+小小白：Spring容器在启动的时候会执行AbstractApplicationContext类的refresh方法，在refresh方法执行的过程中先注册AutowiredAnnotationBeanPostProcessor，然后在对非延迟初始化的单例bean进行初始化时，会间接调用。具体实现细节分析如下。
+
+面试官：你在说一下注入的过程？
+
+小小白：使用AutowiredFieldElement实现对标注在属性上的注入，使用AutowiredMethodElement对标注在方法上的注入。注入过程：根据需要注入的元素的描述信息，按类型或名称查找需要的依赖值，如果依赖没有实例化先实例化依赖，然后使用反射进行赋值。
+
+面试官：@Resource或者@Autowired注解有什么区别？
+
+小小白：虽然@Resource和@Autowired都可以书写标注在属性或者该属性的setter方法之上，但是@Resource默认是按照名称来装配注入的，只有当找不到与名称匹配的bean才会按照类型来装配注入；@Autowired默认是按照类型装配注入的，默认情况下它要求依赖对象必须存在如果允许为null，可以设置它required属性为false，如果想按照名称来注入，则需要结合@Qualifier一起使用；@Resource注解是由JDK提供，而@Autowired是由Spring提供。
